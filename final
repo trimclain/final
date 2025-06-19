@@ -22,6 +22,9 @@ readonly CHOSEN_FS='ext4'
 readonly USE_DETECTED_TIMEZONE='true'
 readonly CHOSEN_KEYBOARD_LAYOUT='us'
 readonly USING_SDD='true'
+# OPTS: CyberRe, Cyberpunk, Shodan, Vimix, fallout
+readonly CHOSEN_GRUB_THEME="Vimix"
+
 
 # Redirect stdout and stderr to final.log and still output to console
 exec > >(tee -i final.log)
@@ -291,12 +294,12 @@ userinfo () {
     # Loop through user input until the user gives a valid username
     while true
     do
-            read -r -p "Please enter username: " username
-            if [[ "${username,,}" =~ ^[a-z_]([a-z0-9_-]{0,31}|[a-z0-9_-]{0,30}\$)$ ]]
-            then
-                    break
-            fi
-            echo "Incorrect username."
+        read -r -p "Please enter username: " username
+        if [[ "${username,,}" =~ ^[a-z_]([a-z0-9_-]{0,31}|[a-z0-9_-]{0,30}\$)$ ]]
+        then
+            break
+        fi
+        echo "Incorrect username."
     done
     export USERNAME=$username
 
@@ -317,18 +320,18 @@ userinfo () {
      # Loop through user input until the user gives a valid hostname, but allow the user to force save
     while true
     do
-            read -r -p "Please name your machine: " name_of_machine
-            # hostname regex (!!couldn't find spec for computer name!!)
-            if [[ "${name_of_machine,,}" =~ ^[a-z][a-z0-9_.-]{0,62}[a-z0-9]$ ]]
-            then
-                    break
-            fi
-            # if validation fails allow the user to force saving of the hostname
-            read -r -p "Hostname doesn't seem correct. Do you still want to save it? (y/n)" force
-            if [[ "${force,,}" = "y" ]]
-            then
-                    break
-            fi
+        read -r -p "Please name your machine: " name_of_machine
+        # hostname regex (!!couldn't find spec for computer name!!)
+        if [[ "${name_of_machine,,}" =~ ^[a-z][a-z0-9_.-]{0,62}[a-z0-9]$ ]]
+        then
+            break
+        fi
+        # if validation fails allow the user to force saving of the hostname
+        read -r -p "Hostname doesn't seem correct. Do you still want to save it? (y/n)" force
+        if [[ "${force,,}" = "y" ]]
+        then
+            break
+        fi
     done
     export NAME_OF_MACHINE=$name_of_machine
 }
@@ -508,7 +511,7 @@ echo -ne "
 "
 # CHANGE: Fix SC2002
 TOTAL_MEM=$(grep -i 'memtotal' /proc/meminfo | grep -o '[[:digit:]]*')
-if [[  $TOTAL_MEM -lt 8000000 ]]; then
+if [[ $TOTAL_MEM -lt 8000000 ]]; then
     # Put swap into the actual system, not into RAM disk, otherwise there is no point in it, it'll cache RAM into RAM. So, /mnt/ everything.
     mkdir -p /mnt/opt/swap # make a dir that we can apply NOCOW to to make it btrfs-friendly.
     if findmnt -n -o FSTYPE /mnt | grep -q btrfs; then
@@ -524,10 +527,6 @@ if [[  $TOTAL_MEM -lt 8000000 ]]; then
 fi
 
 gpu_type=$(lspci | grep -E "VGA|3D|Display")
-
-# CHANGE: switch from CyberRe to Vimix
-# OPTS: CyberRe, Cyberpunk, Shodan, Vimix, fallout
-CHOSEN_GRUB_THEME="Vimix"
 
 arch-chroot /mnt /bin/bash -c "KEYMAP='${KEYMAP}' /bin/bash" <<EOF
 
@@ -556,9 +555,9 @@ echo -ne "
 -------------------------------------------------------------------------
 "
 TOTAL_MEM=$(grep -i 'memtotal' /proc/meminfo | grep -o '[[:digit:]]*')
-if [[  $TOTAL_MEM -gt 8000000 ]]; then
-sed -i "s/#MAKEFLAGS=\"-j2\"/MAKEFLAGS=\"-j$nc\"/g" /etc/makepkg.conf
-sed -i "s/COMPRESSXZ=(xz -c -z -)/COMPRESSXZ=(xz -c -T $nc -z -)/g" /etc/makepkg.conf
+if [[ $TOTAL_MEM -gt 8000000 && -n "$nc" ]]; then
+    sed -i "s/#MAKEFLAGS=\"-j2\"/MAKEFLAGS=\"-j$nc\"/g" /etc/makepkg.conf
+    sed -i "s/COMPRESSXZ=(xz -c -z -)/COMPRESSXZ=(xz -c -T $nc -z -)/g" /etc/makepkg.conf
 fi
 echo -ne "
 -------------------------------------------------------------------------

@@ -16,7 +16,7 @@ ip link (should show wlan0 state as UP)
 3. Install keyring to avoid possible errors in pacstrap
 ```
 pacman -Sy
-pacman -S archlinux-keyring
+pacman -S archlinux-keyring (NOTE: it's installed btw... pacman -Syu should be enough)
 ```
 4. Partitions (check if you need GPT or MBR with `cat /sys/firmware/efi/fw_platform_size`; if file not found use MBR)
     #### Case 1: GPT

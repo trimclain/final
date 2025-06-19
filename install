@@ -16,12 +16,6 @@
 
 readonly VERSION="v0.1.0"
 
-readonly RED='\033[0;31m'
-readonly GREEN='\033[0;32m'
-readonly CYAN='\033[0;36m'
-readonly MAGENTA='\033[0;35m'
-readonly RESET='\033[0m'
-
 # Redirect stdout and stderr to archsetup.txt and still output to console
 exec > >(tee -i archsetup.txt)
 exec 2>&1
@@ -140,7 +134,7 @@ select_option() {
     return $selected
 }
 
-# @description Displays ArchTitus logo
+# @description Displays Arch Linux logo
 # @noargs
 logo () {
 # This will be shown on every set as user is progressing
@@ -163,7 +157,8 @@ filesystem () {
     echo -ne "
     Please Select your file system for both boot and root
     "
-    options=("btrfs" "ext4" "luks" "exit")
+    # CHANGE: default to ext4
+    options=("ext4" "btrfs" "luks" "exit")
     select_option "${options[@]}"
 
     case $? in
@@ -206,7 +201,7 @@ keymap () {
     echo -ne "
     Please select key board layout from this list"
     # These are default key maps as presented in official arch repo archinstall
-    options=(us by ca cf cz de dk es et fa fi fr gr hu il it lt lv mk nl no pl ro ru se sg ua uk)
+    options=(us by ca cf cz de dk es et fa "fi" fr gr hu il it lt lv mk nl no pl ro ru se sg ua uk)
 
     select_option "${options[@]}"
     keymap=${options[$?]}
@@ -248,13 +243,14 @@ echo -ne "
 
     PS3='
     Select the disk to install on: '
-    options=($(lsblk -n --output TYPE,KNAME,SIZE | awk '$1=="disk"{print "/dev/"$2"|"$3}'))
+    # CHANGE: Fix SC2207
+    mapfile -t options < <(lsblk -n --output TYPE,KNAME,SIZE | awk '$1=="disk"{print "/dev/"$2"|"$3}')
 
     select_option "${options[@]}"
     disk=${options[$?]%|*}
 
     echo -e "\n${disk%|*} selected \n"
-        export DISK=${disk%|*}
+    export DISK=${disk%|*}
 
     drivessd
 }
@@ -479,7 +475,8 @@ echo -ne "
                     Checking for low memory systems <8G
 -------------------------------------------------------------------------
 "
-TOTAL_MEM=$(cat /proc/meminfo | grep -i 'memtotal' | grep -o '[[:digit:]]*')
+# CHANGE: Fix SC2002
+TOTAL_MEM=$(grep -i 'memtotal' /proc/meminfo | grep -o '[[:digit:]]*')
 if [[  $TOTAL_MEM -lt 8000000 ]]; then
     # Put swap into the actual system, not into RAM disk, otherwise there is no point in it, it'll cache RAM into RAM. So, /mnt/ everything.
     mkdir -p /mnt/opt/swap # make a dir that we can apply NOCOW to to make it btrfs-friendly.
@@ -496,6 +493,10 @@ if [[  $TOTAL_MEM -lt 8000000 ]]; then
 fi
 
 gpu_type=$(lspci | grep -E "VGA|3D|Display")
+
+# CHANGE: switch from CyberRe to Vimix
+# OPTS: CyberRe, Cyberpunk, Shodan, Vimix, fallout
+CHOSEN_GRUB_THEME="Vimix"
 
 arch-chroot /mnt /bin/bash -c "KEYMAP='${KEYMAP}' /bin/bash" <<EOF
 
@@ -523,7 +524,7 @@ echo -ne "
                 changing the compression settings.
 -------------------------------------------------------------------------
 "
-TOTAL_MEM=$(cat /proc/meminfo | grep -i 'memtotal' | grep -o '[[:digit:]]*')
+TOTAL_MEM=$(grep -i 'memtotal' /proc/meminfo | grep -o '[[:digit:]]*')
 if [[  $TOTAL_MEM -gt 8000000 ]]; then
 sed -i "s/#MAKEFLAGS=\"-j2\"/MAKEFLAGS=\"-j$nc\"/g" /etc/makepkg.conf
 sed -i "s/COMPRESSXZ=(xz -c -z -)/COMPRESSXZ=(xz -c -T $nc -z -)/g" /etc/makepkg.conf
@@ -549,13 +550,13 @@ echo "Keymap set to: ${KEYMAP}"
 sed -i 's/^# %wheel ALL=(ALL) NOPASSWD: ALL/%wheel ALL=(ALL) NOPASSWD: ALL/' /etc/sudoers
 sed -i 's/^# %wheel ALL=(ALL:ALL) NOPASSWD: ALL/%wheel ALL=(ALL:ALL) NOPASSWD: ALL/' /etc/sudoers
 
-#Add parallel downloading
+# Add parallel downloading
 sed -i 's/^#ParallelDownloads/ParallelDownloads/' /etc/pacman.conf
 
-#Set colors and enable the easter egg
+# Set colors and enable the easter egg
 sed -i 's/^#Color/Color\nILoveCandy/' /etc/pacman.conf
 
-#Enable multilib
+# Enable multilib
 sed -i "/\[multilib\]/,/Include/"'s/^#//' /etc/pacman.conf
 pacman -Sy --noconfirm --needed
 
@@ -647,8 +648,8 @@ fi
 # set kernel parameter for adding splash screen
 sed -i 's/GRUB_CMDLINE_LINUX_DEFAULT="[^"]*/& splash /' /etc/default/grub
 
-echo -e "Installing CyberRe Grub theme..."
-THEME_DIR="/boot/grub/themes/CyberRe"
+echo -e "Installing ${CHOSEN_GRUB_THEME} Grub theme..."
+THEME_DIR="/boot/grub/themes/${CHOSEN_GRUB_THEME}"
 echo -e "Creating the theme directory..."
 mkdir -p "${THEME_DIR}"
 
@@ -657,13 +658,13 @@ cd "${THEME_DIR}" || exit
 git init
 git remote add -f origin https://github.com/ChrisTitusTech/Top-5-Bootloader-Themes.git
 git config core.sparseCheckout true
-echo "themes/CyberRe/*" >> .git/info/sparse-checkout
+echo "themes/${CHOSEN_GRUB_THEME}/*" >> .git/info/sparse-checkout
 git pull origin main
-mv themes/CyberRe/* .
+mv themes/${CHOSEN_GRUB_THEME}/* .
 rm -rf themes
 rm -rf .git
 
-echo "CyberRe theme has been cloned to ${THEME_DIR}"
+echo "${CHOSEN_GRUB_THEME} theme has been cloned to ${THEME_DIR}"
 echo -e "Backing up Grub config..."
 cp -an /etc/default/grub /etc/default/grub.bak
 echo -e "Setting the theme as the default..."
@@ -687,16 +688,18 @@ systemctl stop dhcpcd.service
 echo "  DHCP stopped"
 systemctl enable NetworkManager.service
 echo "  NetworkManager enabled"
-
-echo -ne "
--------------------------------------------------------------------------
-                    Cleaning
--------------------------------------------------------------------------
-"
-# Remove no password sudo rights
-sed -i 's/^%wheel ALL=(ALL) NOPASSWD: ALL/# %wheel ALL=(ALL) NOPASSWD: ALL/' /etc/sudoers
-sed -i 's/^%wheel ALL=(ALL:ALL) NOPASSWD: ALL/# %wheel ALL=(ALL:ALL) NOPASSWD: ALL/' /etc/sudoers
-# Add sudo rights
-sed -i 's/^# %wheel ALL=(ALL) ALL/%wheel ALL=(ALL) ALL/' /etc/sudoers
-sed -i 's/^# %wheel ALL=(ALL:ALL) ALL/%wheel ALL=(ALL:ALL) ALL/' /etc/sudoers
 EOF
+
+# CHANGE: I actually want to keep the no password sudo rights
+# echo -ne "
+# -------------------------------------------------------------------------
+#                     Cleaning
+# -------------------------------------------------------------------------
+# "
+# # Remove no password sudo rights
+# sed -i 's/^%wheel ALL=(ALL) NOPASSWD: ALL/# %wheel ALL=(ALL) NOPASSWD: ALL/' /etc/sudoers
+# sed -i 's/^%wheel ALL=(ALL:ALL) NOPASSWD: ALL/# %wheel ALL=(ALL:ALL) NOPASSWD: ALL/' /etc/sudoers
+# # Add sudo rights
+# sed -i 's/^# %wheel ALL=(ALL) ALL/%wheel ALL=(ALL) ALL/' /etc/sudoers
+# sed -i 's/^# %wheel ALL=(ALL:ALL) ALL/%wheel ALL=(ALL:ALL) ALL/' /etc/sudoers
+# EOF

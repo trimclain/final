@@ -1,22 +1,43 @@
 #!/usr/bin/env bash
 
-INSTALL="sudo pacman -S --noconfirm --needed"
+# shellcheck disable=SC2155
 
-# TODO: Add some of commands from README so I can use this script at an earlier stage
+SILENT='false'
+TAG='main'
 
-# Install man
-$INSTALL man-db man-pages
+if command -v tput > /dev/null; then
+    readonly GREEN=$(tput setaf 2)
+    readonly RESET=$(tput sgr0)
+fi
 
-# Install the X.org display server
-$INSTALL xorg-server xorg-xinit xorg-xrandr xorg-xdpyinfo xorg-xinput xorg-xev
+while [[ $# -gt 0 ]]; do
+    case "$1" in
+        -s | --silent) readonly SILENT='true' ;;
+        -t | --tag)
+            if [[ -n "$2" ]] && [[ "$2" != -* ]]; then
+                readonly TAG="$2"
+                shift
+            else
+                echo "Option --tag requires an argument"
+                exit 1
+            fi
+            ;;
+        --tag=?*)
+            readonly TAG="${1#*=}"
+            ;;
+        *) echo "Invalid argument: $1" && exit 1 ;;
+    esac
+    shift
+done
 
-# # Install the LightDM login manager
-# $INSTALL lightdm lightdm-gtk-greeter lightdm-gtk-greeter-settings
-# sudo systemctl enable lightdm
+[[ "$SILENT" == "true" ]] || echo "Installing the final script..."
 
-# Install SDDM
-$INSTALL sddm # sddm-kcm
-sudo systemctl enable sddm
+if [[ "$SILENT" == "true" ]]; then
+    curl -fsSL "https://raw.githubusercontent.com/trimclain/final/$TAG/final" --output final
+else
+    curl -fL# "https://raw.githubusercontent.com/trimclain/final/$TAG/final" --output final
+fi
 
-# Install the audio/video processor
-$INSTALL pipewire pipewire-pulse wireplumber
+chmod 755 final
+
+[[ "$SILENT" == "true" ]] || echo "${GREEN}Installation finished. Run ./final${RESET}"

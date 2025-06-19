@@ -17,8 +17,14 @@
 
 readonly _VERSION="v0.1.0"
 
-# Redirect stdout and stderr to archsetup.txt and still output to console
-exec > >(tee -i archsetup.txt)
+# My Settings to not even use the interactive menu
+readonly CHOSEN_FS='ext4'
+readonly USE_DETECTED_TIMEZONE='true'
+readonly CHOSEN_KEYBOARD_LAYOUT='us'
+readonly USING_SDD='true'
+
+# Redirect stdout and stderr to final.log and still output to console
+exec > >(tee -i final.log)
 exec 2>&1
 
 echo -ne "
@@ -154,6 +160,12 @@ echo -ne "
 # @description This function will handle file systems. At this movement we are handling only
 # btrfs and ext4. Others will be added in future.
 filesystem () {
+    if [[ -n "$CHOSEN_FS" ]]; then
+        echo "[CONFIG] Using file system: $CHOSEN_FS"
+        export FS="$CHOSEN_FS"
+        return
+    fi
+
     echo -ne "
     Please Select your file system for both boot and root
     "
@@ -177,6 +189,13 @@ filesystem () {
 timezone () {
     # Added this from arch wiki https://wiki.archlinux.org/title/System_time
     time_zone="$(curl --fail https://ipapi.co/timezone)"
+
+    if [[ "$USE_DETECTED_TIMEZONE" == "true" ]]; then
+        echo "[CONFIG] Using detected timezone: $time_zone"
+        export TIMEZONE="$time_zone"
+        return
+    fi
+
     echo -ne "
     System detected your timezone to be '$time_zone' \n"
     echo -ne "Is this correct?
@@ -198,6 +217,12 @@ timezone () {
 }
 # @description Set user's keyboard mapping.
 keymap () {
+    if [[ -n "$CHOSEN_KEYBOARD_LAYOUT" ]]; then
+        echo "[CONFIG] Using default keyboard layout: $CHOSEN_KEYBOARD_LAYOUT"
+        export KEYMAP="$CHOSEN_KEYBOARD_LAYOUT"
+        return
+    fi
+
     echo -ne "
     Please select key board layout from this list"
     # These are default key maps as presented in official arch repo archinstall
@@ -212,6 +237,12 @@ keymap () {
 
 # @description Choose whether drive is SSD or not.
 drivessd () {
+    if [[ "$USING_SDD" == "true" ]]; then
+        echo "[CONFIG] Using SSD mount options."
+        export MOUNT_OPTIONS="noatime,compress=zstd,ssd,commit=120"
+        return
+    fi
+
     echo -ne "
     Is this an ssd? yes/no:
     "

@@ -2,8 +2,13 @@
 
 # shellcheck disable=SC2155
 
-SILENT='true'
+SILENT='false'
 TAG='rewrite'
+
+if command -v tput > /dev/null; then
+    readonly GREEN=$(tput setaf 2)
+    readonly RESET=$(tput sgr0)
+fi
 
 while [[ $# -gt 0 ]]; do
     case "$1" in
@@ -25,10 +30,7 @@ while [[ $# -gt 0 ]]; do
     shift
 done
 
-# if [[ "$TAG" != "main" && ! "$TAG" =~ ^v0\.[1-9]\.[0-9]+$ ]]; then
-#     echo "Tag $TAG does not exist."
-#     exit 1
-# fi
+[[ "$SILENT" == "true" ]] || echo "Installing the final script..."
 
 if [[ "$SILENT" == "true" ]]; then
     curl -fsSL "https://raw.githubusercontent.com/trimclain/final/$TAG/final" --output final
@@ -37,4 +39,5 @@ else
 fi
 
 chmod 755 final
-./final
+
+[[ "$SILENT" == "true" ]] || echo "${GREEN}Installation finished. Run ./final${RESET}"

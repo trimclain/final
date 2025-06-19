@@ -25,10 +25,10 @@ while [[ $# -gt 0 ]]; do
     shift
 done
 
-if [[ "$TAG" != "main" && ! "$TAG" =~ ^v0\.[1-9]\.[0-9]+$ ]]; then
-    echo "Tag $TAG does not exist."
-    exit 1
-fi
+# if [[ "$TAG" != "main" && ! "$TAG" =~ ^v0\.[1-9]\.[0-9]+$ ]]; then
+#     echo "Tag $TAG does not exist."
+#     exit 1
+# fi
 
 if [[ "$SILENT" == "true" ]]; then
     curl -fsSL "https://raw.githubusercontent.com/trimclain/final/$TAG/final" --output final

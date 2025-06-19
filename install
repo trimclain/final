@@ -1,18 +1,40 @@
 #!/usr/bin/env bash
-#
-# Arch Linux Install Script
-# My modifications of ChrisTitusTech/linutil
-# Credit: https://github.com/ChrisTitusTech/linutil/blob/main/core/tabs/system-setup/arch/server-setup.sh
-#
-# Author: @trimclain
-# License: GPL-3.0
 
-# shellcheck disable=SC2155,SC2164
-# Disabled:
-# "Declare and assign separately to avoid masking return values":
-#  https://www.shellcheck.net/wiki/SC2155
-# "Use 'pushd ... || exit' or 'pushd ... || exit' in case pushd fails":
-#  https://www.shellcheck.net/wiki/SC2164
+# shellcheck disable=SC2155
 
-curl -fsSL "https://raw.githubusercontent.com/trimclain/final/rewrite/final" --output final
+SILENT='true'
+TAG='rewrite'
+
+while [[ $# -gt 0 ]]; do
+    case "$1" in
+        -s | --silent) readonly SILENT='true' ;;
+        -t | --tag)
+            if [[ -n "$2" ]] && [[ "$2" != -* ]]; then
+                readonly TAG="$2"
+                shift
+            else
+                echo "Option --tag requires an argument"
+                exit 1
+            fi
+            ;;
+        --tag=?*)
+            readonly TAG="${1#*=}"
+            ;;
+        *) echo "Invalid argument: $1" && exit 1 ;;
+    esac
+    shift
+done
+
+if [[ "$TAG" != "main" && ! "$TAG" =~ ^v0\.[1-9]\.[0-9]+$ ]]; then
+    echo "Tag $TAG does not exist."
+    exit 1
+fi
+
+if [[ "$SILENT" == "true" ]]; then
+    curl -fsSL "https://raw.githubusercontent.com/trimclain/final/$TAG/final" --output final
+else
+    curl -fL# "https://raw.githubusercontent.com/trimclain/final/$TAG/final" --output final
+fi
+
 chmod 755 final
+./final

@@ -3,7 +3,7 @@
 # shellcheck disable=SC2155
 
 SILENT='false'
-TAG='rewrite'
+TAG='main'
 
 if command -v tput > /dev/null; then
     readonly GREEN=$(tput setaf 2)

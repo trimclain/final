@@ -1,21 +1,35 @@
 #!/bin/bash
 
 ###############################################################################
-# Edit logind.conf to suspend on power key press and when closing the lid
+# Configure logind to suspend on power key press and when closing the lid
 ###############################################################################
+# DOCS: man logind.conf
 
-CONF=/etc/systemd/logind.conf
+# It's a good practice to prefix the filename with a two-digit number and a dash
+# (e.g., 60-custom.conf or 80-mylogind.conf). This helps with ordering.
+LOGIND_DROPIN_DIR="/etc/systemd/logind.conf.d"
+LOGIND_DROPIN_FILE="${LOGIND_DROPIN_DIR}/90-suspend-on-lid-and-power.conf"
 
-check_and_update_line() {
-    local pattern="$1"
-    local line="$2"
+if [[ $EUID -ne 0 ]]; then
+    exec sudo "$0" "$@"
+fi
 
-    if grep -q "$pattern" "$CONF"; then
-        sudo sed -i "/$pattern/s/.*/$line/" "$CONF"
-    else
-        echo "$line" | sudo tee -a "$CONF" > /dev/null
-    fi
-}
+mkdir -p "${LOGIND_DROPIN_DIR}"
 
-check_and_update_line '^#*HandlePowerKey=' "HandlePowerKey=suspend"
-check_and_update_line '^#*HandleLidSwitch=' "HandleLidSwitch=suspend"
+echo -ne "Creating logind configuration file at ${LOGIND_DROPIN_FILE}... "
+cat <<EOF > "${LOGIND_DROPIN_FILE}"
+[Login]
+# Options: ignore, poweroff, reboot, halt, suspend, hibernate, hybrid-sleep, lock
+
+HandlePowerKey=suspend
+HandleLidSwitch=suspend
+EOF
+echo "Done"
+
+# Reload config
+echo "Reboot or restart systemd-logind with the following command:"
+echo "  sudo systemctl restart systemd-logind"
+echo "WARNING: This will log you out of your current session."
+
+# Verify changes
+#systemd-analyze cat-config systemd/logind.conf

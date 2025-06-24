@@ -726,6 +726,9 @@ mv themes/${CHOSEN_GRUB_THEME}/* .
 rm -rf themes
 rm -rf .git
 
+# TODO: handle the case for os-prober?
+# Need to Mount the drive with Windows for os-prober to detect it
+# Requirement: os-prober and GRUB_DISABLE_OS_PROBER=false in /etc/default/grub
 echo "${CHOSEN_GRUB_THEME} theme has been cloned to ${THEME_DIR}"
 echo -e "Backing up Grub config..."
 cp -an /etc/default/grub /etc/default/grub.bak
@@ -750,6 +753,31 @@ systemctl stop dhcpcd.service
 echo "  DHCP stopped"
 systemctl enable NetworkManager.service
 echo "  NetworkManager enabled"
+
+echo -ne "
+-------------------------------------------------------------------------
+                    Install Additional Packages
+-------------------------------------------------------------------------
+"
+# man pages
+$INSTALL man-db man-pages
+
+# Install the X.org display server
+$INSTALL xorg-server xorg-xinit xorg-xrandr xorg-xdpyinfo xorg-xinput xorg-xev xorg-xwininfo
+
+# Install SDDM (INFO: sddm-kcm is a GUI for SDDM config)
+$INSTALL sddm
+systemctl enable sddm
+
+# Install the audio/video processor and pavucontrol as GUI settings manager
+$INSTALL pipewire pipewire-pulse wireplumber pavucontrol
+
+echo -ne "
+-------------------------------------------------------------------------
+                    Install Paru AUR Helper
+-------------------------------------------------------------------------
+"
+# TODO: continue here
 EOF
 
 # CHANGE: I actually want to keep the no password sudo rights
@@ -765,3 +793,18 @@ EOF
 # sed -i 's/^# %wheel ALL=(ALL) ALL/%wheel ALL=(ALL) ALL/' /etc/sudoers
 # sed -i 's/^# %wheel ALL=(ALL:ALL) ALL/%wheel ALL=(ALL:ALL) ALL/' /etc/sudoers
 # EOF
+
+# MAYBER LATER:
+# -------------------------------------------------------------------------
+#                     Security
+# -------------------------------------------------------------------------
+# # Enforce a delay of 4 seconds after a failed login attempt
+# if ! grep -q "auth optional pam_faildelay.so delay=4000000" /etc/pam.d/system-login; then
+#     echo "Enforcing a delay of 4 seconds after a failed login attempt"
+#     echo -e "\nauth optional pam_faildelay.so delay=4000000" >> /etc/pam.d/system-login
+# fi
+# # Edit /etc/security/faillock.conf to lock out users after 5 attemts and to persist the locks after reboot
+# echo "Configuring to lock out users after 5 attempts"
+# sed -i 's/^# \(deny =\) 3/\1 5/' /etc/security/faillock.conf
+# echo "Enabling persist locks after reboot"
+# sed -i 's/^# \(dir = \/var\/\)run\/faillock/\1lib\/faillock/' /etc/security/faillock.conf

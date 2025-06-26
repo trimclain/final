@@ -784,7 +784,10 @@ $INSTALL qtile python-psutil python-iwlib python-libcst
 $INSTALL dmenu rofi slock dunst picom feh
 elif [[ "${CHOSEN_DESKTOP}" == "kde" ]]; then
     # kde plasma
-$INSTALL plasma-meta
+$INSTALL plasma-meta kde-applications-meta
+elif [[ "${CHOSEN_DESKTOP}" == "xfce" ]]; then
+    # xfce 4
+$INSTALL xfce4 xfce4-goodies
 fi
 EOF
 

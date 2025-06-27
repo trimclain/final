@@ -30,7 +30,7 @@ readonly CHOSEN_GRUB_THEME="Vimix"
 # Default: "en_US.UTF-8"
 readonly LOCALE_TIME="de_DE.UTF-8"
 readonly DEFAULT_HOSTNAME="arch"
-readonly CHOSEN_DESKTOP="kde"
+readonly CHOSEN_DESKTOP=""
 ###############################################################################
 
 # Redirect stdout and stderr to final.log and still output to console
@@ -760,24 +760,27 @@ echo -ne "
                     Install Additional Packages
 -------------------------------------------------------------------------------
 "
-# man pages
+# Install man pages
 $INSTALL man-db man-pages
 
 # Install the audio/video processor and pavucontrol as GUI settings manager
 $INSTALL pipewire pipewire-pulse wireplumber pavucontrol
-
-# Install the X.org display server
-$INSTALL xorg-server xorg-xinit xorg-xrandr xorg-xdpyinfo xorg-xinput xorg-xev xorg-xwininfo
-
-# Install SDDM (INFO: sddm-kcm is a GUI for SDDM config)
-$INSTALL sddm
-systemctl enable sddm
 
 echo -ne "
 -------------------------------------------------------------------------------
                     Install DE / WM
 -------------------------------------------------------------------------------
 "
+
+# Install the X.org display server
+$INSTALL xorg-server xorg-xinit xorg-xrandr xorg-xdpyinfo xorg-xinput xorg-xev xorg-xwininfo
+
+if [[ -n "${CHOSEN_DESKTOP}" ]]; then
+    # Install SDDM (INFO: sddm-kcm is a GUI for SDDM config)
+$INSTALL sddm
+    systemctl enable sddm
+fi
+
 if [[ "${CHOSEN_DESKTOP}" == "qtile" ]]; then
     # qtile
 $INSTALL qtile python-psutil python-iwlib python-libcst

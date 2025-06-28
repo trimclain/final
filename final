@@ -30,7 +30,12 @@ readonly CHOSEN_GRUB_THEME="Vimix"
 # Default: "en_US.UTF-8"
 readonly LOCALE_TIME="de_DE.UTF-8"
 readonly DEFAULT_HOSTNAME="arch"
-readonly CHOSEN_DESKTOP=""
+readonly CHOSEN_DESKTOP="qtile"
+
+if [[ -n "$1" ]]; then
+    INSTALL_DOTFILES="true"
+fi
+
 ###############################################################################
 
 # Redirect stdout and stderr to final.log and still output to console
@@ -768,7 +773,7 @@ $INSTALL pipewire pipewire-pulse wireplumber pavucontrol
 
 echo -ne "
 -------------------------------------------------------------------------------
-                    Install DE / WM
+                        Install DE / WM
 -------------------------------------------------------------------------------
 "
 
@@ -785,6 +790,8 @@ if [[ "${CHOSEN_DESKTOP}" == "qtile" ]]; then
     # qtile
 $INSTALL qtile python-psutil python-iwlib python-libcst
 $INSTALL dmenu rofi slock dunst picom feh
+    # at least one terminal is needed
+$INSTALL alacritty
 elif [[ "${CHOSEN_DESKTOP}" == "kde" ]]; then
     # kde plasma
 $INSTALL plasma-meta kde-applications-meta
@@ -792,6 +799,15 @@ elif [[ "${CHOSEN_DESKTOP}" == "xfce" ]]; then
     # xfce 4
 $INSTALL xfce4 xfce4-goodies
 fi
+
+if [[ "${INSTALL_DOTFILES}" == "true" ]]; then
+echo -ne "
+-------------------------------------------------------------------------------
+                          Install Dotfiles
+-------------------------------------------------------------------------------
+"
+    git clone https://github.com/trimclain/.dotfiles /home/$USERNAME/.dotfiles
+    chown -R "$USERNAME": /home/$USERNAME/.dotfiles
 EOF
 
 # CHANGE: I actually want to keep the no password sudo rights

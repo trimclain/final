@@ -838,3 +838,9 @@ EOF
 # sed -i 's/^# \(deny =\) 3/\1 5/' /etc/security/faillock.conf
 # echo "Enabling persist locks after reboot"
 # sed -i 's/^# \(dir = \/var\/\)run\/faillock/\1lib\/faillock/' /etc/security/faillock.conf
+
+# TODO:
+# -------------------------------------------------------------------------------
+#                     Laptop Power Management
+# -------------------------------------------------------------------------------
+# $INSTALL acpi acpid

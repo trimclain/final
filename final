@@ -783,6 +783,9 @@ $INSTALL xorg-server xorg-xinit xorg-xrandr xorg-xdpyinfo xorg-xinput xorg-xev x
 if [[ -n "${CHOSEN_DESKTOP}" ]]; then
     # Install SDDM (INFO: sddm-kcm is a GUI for SDDM config)
 $INSTALL sddm
+    # TODO: add this after conforming with linutil nvidia setup
+    # With Nvidia GPU to use it as primary GPU
+    #echo -e  "xrandr --setprovideroutputsource modesetting NVIDIA-0\nxrandr --auto" >> /usr/share/sddm/scripts/Xsetup
     systemctl enable sddm
 fi
 
@@ -800,6 +803,7 @@ elif [[ "${CHOSEN_DESKTOP}" == "xfce" ]]; then
 $INSTALL xfce4 xfce4-goodies
 fi
 
+# TODO: why not work?
 if [[ "${INSTALL_DOTFILES}" == "true" ]]; then
 echo -ne "
 -------------------------------------------------------------------------------

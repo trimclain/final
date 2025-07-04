@@ -17,7 +17,7 @@ fi
 mkdir -p "${LOGIND_DROPIN_DIR}"
 
 echo -ne "Creating logind configuration file at ${LOGIND_DROPIN_FILE}... "
-cat <<EOF > "${LOGIND_DROPIN_FILE}"
+cat << EOF > "${LOGIND_DROPIN_FILE}"
 [Login]
 # Options: ignore, poweroff, reboot, halt, suspend, hibernate, hybrid-sleep, lock
 

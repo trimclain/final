@@ -16,7 +16,7 @@ fi
 mkdir -p "${XORG_CONFIG_DIR}"
 
 echo -ne "Creating touchpad configuration file at ${TOUCHPAD_CONFIG_FILE}... "
-cat <<EOF > "${TOUCHPAD_CONFIG_FILE}"
+cat << EOF > "${TOUCHPAD_CONFIG_FILE}"
 Section "InputClass"
         Identifier "Touchpad"
         MatchDriver "libinput"

@@ -792,7 +792,7 @@ fi
 if [[ "${CHOSEN_DESKTOP}" == "qtile" ]]; then
     # qtile
 $INSTALL qtile python-psutil python-iwlib python-libcst
-$INSTALL dmenu rofi slock dunst picom feh
+$INSTALL dmenu rofi slock xss-lock dunst picom feh
     # at least one terminal is needed
 $INSTALL alacritty
 elif [[ "${CHOSEN_DESKTOP}" == "kde" ]]; then

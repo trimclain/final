@@ -669,11 +669,12 @@ echo -ne "
 -------------------------------------------------------------------------------
 "
 groupadd libvirt
-# TODO: add more groups: wheel,audio,video,optical,storage
-useradd -m -G wheel,libvirt -s /bin/bash $USERNAME
-echo "$USERNAME created, home directory created, added to wheel and libvirt group, default shell set to /bin/bash"
+groupadd docker
+useradd -m -G wheel,docker,libvirt -s /bin/bash $USERNAME
+echo "$USERNAME created, home directory created, added to wheel, docker and libvirt group, default shell set to /bin/bash"
+echo "root:$PASSWORD" | chpasswd
 echo "$USERNAME:$PASSWORD" | chpasswd
-echo "$USERNAME password set"
+echo "$USERNAME and root passwords set"
 echo $NAME_OF_MACHINE > /etc/hostname
 # TODO: do I want to set root password?
 

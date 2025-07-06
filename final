@@ -812,6 +812,7 @@ echo -ne "
 "
     git clone https://github.com/trimclain/.dotfiles /home/$USERNAME/.dotfiles
     chown -R "$USERNAME": /home/$USERNAME/.dotfiles
+fi
 EOF
 
 # CHANGE: I actually want to keep the no password sudo rights

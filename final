@@ -28,7 +28,7 @@ readonly USING_SSD='true'
 readonly CHOSEN_GRUB_THEME="Vimix"
 
 # Default: "en_US.UTF-8"
-readonly LOCALE_TIME="de_DE.UTF-8"
+readonly LOCALE_TIME="en_GB.UTF-8"
 readonly DEFAULT_HOSTNAME="arch"
 readonly CHOSEN_DESKTOP="qtile"
 
@@ -763,6 +763,17 @@ echo "  NetworkManager enabled"
 
 echo -ne "
 -------------------------------------------------------------------------------
+                          Install Paru and Flatpak
+-------------------------------------------------------------------------------
+"
+git clone https://aur.archlinux.org/paru-bin.git /opt/paru-bin && chown -R "$USERNAME": /opt/paru-bin
+pushd /opt/paru-bin && makepkg --noconfirm -si && popd
+$INSTALL flatpak
+# Arch does this by default
+#flatpak remote-add --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo
+
+echo -ne "
+-------------------------------------------------------------------------------
                     Install Additional Packages
 -------------------------------------------------------------------------------
 "
@@ -804,7 +815,6 @@ elif [[ "${CHOSEN_DESKTOP}" == "xfce" ]]; then
 $INSTALL xfce4 xfce4-goodies
 fi
 
-# TODO: why not work?
 if [[ "${INSTALL_DOTFILES}" == "true" ]]; then
 echo -ne "
 -------------------------------------------------------------------------------

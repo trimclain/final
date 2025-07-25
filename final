@@ -674,7 +674,8 @@ echo -ne "
 "
 groupadd libvirt
 groupadd docker
-useradd -m -G wheel,docker,libvirt -s /bin/bash $USERNAME
+# The "video" group is required by brightnessctl
+useradd -m -G wheel,video,docker,libvirt -s /bin/bash $USERNAME
 echo "$USERNAME created, home directory created, added to wheel, docker and libvirt group, default shell set to /bin/bash"
 echo "root:$PASSWORD" | chpasswd
 echo "$USERNAME:$PASSWORD" | chpasswd

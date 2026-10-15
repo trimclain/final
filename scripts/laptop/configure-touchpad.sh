@@ -6,6 +6,8 @@
 # DOCS: man libinput.4
 # Useful Info in /usr/share/X11/xorg.conf.d/40-libinput.conf
 
+set -euo pipefail
+
 XORG_CONFIG_DIR="/etc/X11/xorg.conf.d"
 TOUCHPAD_CONFIG_FILE="${XORG_CONFIG_DIR}/30-touchpad.conf"
 
@@ -15,7 +17,7 @@ fi
 
 mkdir -p "${XORG_CONFIG_DIR}"
 
-echo -ne "Creating touchpad configuration file at ${TOUCHPAD_CONFIG_FILE}... "
+printf 'Creating touchpad configuration file at %s... ' "${TOUCHPAD_CONFIG_FILE}"
 cat << EOF > "${TOUCHPAD_CONFIG_FILE}"
 Section "InputClass"
         Identifier "Touchpad"
